@@ -53,7 +53,7 @@ vector<regions_str> generate_admixture(std::vector<chromosome_str> &offspring1, 
 	for (size_t i = 0; i < p1.size(); i++) {
 		size_t pos = 0;
 		while (pos < p1[i].sequence.size()) {
-			int len = rand() % net_len;
+			int len = min_block + (rand() % net_len);
 			regions_str tmp;
 			tmp.chr = offspring1[i].name;
 			tmp.start = pos;
