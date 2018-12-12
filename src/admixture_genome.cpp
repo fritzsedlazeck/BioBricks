@@ -42,40 +42,74 @@ char mut_char2(char old) {
 	return 'N';
 }
 
+vector<int> generate_boarders(size_t size, int num_blocks) {
+	int med_size = size/num_blocks; // (max_block + min_block) / 2;
+	int min_block=med_size- (med_size*0.2);
+	int net_len= (med_size*0.4);
 
-vector<regions_str> generate_admixture(std::vector<chromosome_str> &offspring1, std::vector<chromosome_str> p1, std::vector<chromosome_str> p2, int min_block, int max_block, float parental_propability,float mutation_rate) {
+
+	vector<int> blocks;
+	int i = 0;
+	while (i < size) {
+		i += min_block + (rand() % net_len); //jump forward;
+		blocks.push_back(min(i, (int) size)); // to avoid an overflow
+	}
+	return blocks;
+}
+vector<regions_str> generate_admixture(std::vector<chromosome_str> &offspring1, std::vector<chromosome_str> p1, std::vector<chromosome_str> p2, int min_block, int max_block, float parental_propability, float mutation_rate) {
 
 	offspring1 = p1;
-	int net_len = max_block - min_block;
+	//int net_len = max_block - min_block;
 
 	vector<regions_str> regions;
 
 	for (size_t i = 0; i < p1.size(); i++) {
-		size_t pos = 0;
-		while (pos < p1[i].sequence.size()) {
-			int len = min_block + (rand() % net_len);
+		vector<int> boarders = generate_boarders(p1[i].sequence.size(), 200);
+		int pos = 0;
+		for (size_t j = 0; j < boarders.size(); j++) {
 			regions_str tmp;
 			tmp.chr = offspring1[i].name;
 			tmp.start = pos;
-			tmp.stop = pos + len;
+			tmp.stop = boarders[j];
 			float x = ((float) rand() / (float) (RAND_MAX));
 			if (x < parental_propability) { //only if it is the other parent (p2)
-				for (size_t t = 0; t < len && t + pos < offspring1[i].sequence.size(); t++) {
-					offspring1[i].sequence[t + pos] = p2[i].sequence[t + pos];
+				for (size_t t = tmp.start; t < tmp.stop && t < offspring1[i].sequence.size(); t++) {
+					offspring1[i].sequence[t] = p2[i].sequence[t];
 				}
 				tmp.p1 = false;
 			} else {
 				tmp.p1 = true;
 			}
 			regions.push_back(tmp);
-			pos += len;
+
+			pos = boarders[j];
 		}
+
+		/*	size_t pos = 0;
+		 while (pos < p1[i].sequence.size()) {
+		 int len = min_block + (rand() % net_len);
+		 regions_str tmp;
+		 tmp.chr = offspring1[i].name;
+		 tmp.start = pos;
+		 tmp.stop = pos + len;
+		 float x = ((float) rand() / (float) (RAND_MAX));
+		 if (x < parental_propability) { //only if it is the other parent (p2)
+		 for (size_t t = 0; t < len && t + pos < offspring1[i].sequence.size(); t++) {
+		 offspring1[i].sequence[t + pos] = p2[i].sequence[t + pos];
+		 }
+		 tmp.p1 = false;
+		 } else {
+		 tmp.p1 = true;
+		 }
+		 regions.push_back(tmp);
+		 pos += len;
+		 }*/
 
 		pos = 0;
 		while (pos < offspring1[i].sequence.size()) {
 			float x = ((float) rand() / (float) (RAND_MAX));
 			if (x < mutation_rate) {
-				offspring1[i].sequence[pos] =mut_char2(toupper(offspring1[i].sequence[pos]));
+				offspring1[i].sequence[pos] = mut_char2(toupper(offspring1[i].sequence[pos]));
 			}
 			pos++;
 		}

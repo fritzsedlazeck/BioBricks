@@ -51,6 +51,7 @@ int main(int argc, char **argv) {
 			} else {
 				report_admixture(offspring, regions, p2, ss.str());
 			}
+
 		}
 	} else {
 		cout << "1: Fasta file" << endl;
